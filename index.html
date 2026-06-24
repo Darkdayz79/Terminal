@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>zsh Terminal Reference</title>
+<title>zsh Terminal Reference — Interactive Guide</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
@@ -147,6 +147,149 @@ header{background:var(--bg-hdr);border-bottom:1px solid var(--border);
 
 /* ── Misc ── */
 .no-results{padding:12px;font-size:12px;color:var(--dim);font-family:var(--mono);text-align:center;}
+
+/* ══════════════════════════════════════
+   TAB NAV
+══════════════════════════════════════ */
+#tab-nav{display:flex;background:var(--bg-hdr);border-bottom:1px solid var(--border);
+  flex-shrink:0;padding:0 16px;gap:2px;}
+.tab-btn{padding:8px 16px;font-size:12px;font-weight:500;cursor:pointer;
+  border:none;background:none;color:var(--muted);border-bottom:2px solid transparent;
+  transition:all .15s;white-space:nowrap;font-family:var(--ui);}
+.tab-btn:hover{color:var(--text);}
+.tab-btn.active{color:var(--blue);border-bottom-color:var(--blue);}
+.tab-panel{display:none;flex:1;overflow:hidden;}
+.tab-panel.active{display:flex;}
+.tab-panel.guide-panel{overflow-y:auto;display:none;flex-direction:column;}
+.tab-panel.guide-panel.active{display:block;}
+
+/* ══════════════════════════════════════
+   GUIDE SHARED STYLES
+══════════════════════════════════════ */
+.guide{max-width:860px;margin:0 auto;padding:36px 32px 60px;}
+.guide h1{font-size:24px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.guide .subtitle{font-size:14px;color:var(--muted);margin-bottom:36px;line-height:1.6;}
+.guide h2{font-size:16px;font-weight:700;color:var(--text);margin:36px 0 12px;
+  padding-bottom:8px;border-bottom:1px solid var(--border);}
+.guide h3{font-size:13px;font-weight:700;color:var(--blue);margin:20px 0 8px;
+  text-transform:uppercase;letter-spacing:.06em;}
+.guide p{font-size:13px;color:var(--muted);line-height:1.75;margin-bottom:12px;}
+.guide code{font-family:var(--mono);font-size:12px;background:rgba(255,255,255,.06);
+  padding:1px 5px;border-radius:4px;color:var(--cmd-green);}
+.guide pre{font-family:var(--mono);font-size:12px;background:#0c0c0c;
+  border:1px solid var(--border);border-radius:8px;padding:14px 16px;
+  overflow-x:auto;line-height:1.7;margin:10px 0 16px;color:var(--out);}
+.guide pre .g{color:var(--cmd-green);}
+.guide pre .b{color:var(--blue);}
+.guide pre .p{color:var(--purple);}
+.guide pre .o{color:var(--orange);}
+.guide pre .r{color:var(--red);}
+.guide pre .m{color:var(--muted);}
+.guide pre .c{color:var(--cat);}
+.callout{background:rgba(88,166,255,.06);border:1px solid rgba(88,166,255,.2);
+  border-radius:8px;padding:12px 16px;margin:12px 0 16px;font-size:13px;
+  color:var(--text);line-height:1.65;}
+.callout.warn{background:rgba(210,153,34,.06);border-color:rgba(210,153,34,.25);
+  color:var(--text);}
+.callout.danger{background:rgba(248,81,73,.06);border-color:rgba(248,81,73,.25);}
+.callout strong{color:var(--blue);}
+.callout.warn strong{color:var(--orange);}
+.callout.danger strong{color:var(--red);}
+.guide table{width:100%;border-collapse:collapse;font-size:12px;margin:10px 0 20px;}
+.guide th{text-align:left;padding:7px 12px;background:rgba(255,255,255,.04);
+  color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;border-bottom:1px solid var(--border);}
+.guide td{padding:7px 12px;border-bottom:1px solid rgba(255,255,255,.04);
+  vertical-align:top;color:var(--out);font-size:12px;line-height:1.5;}
+.guide td code{color:var(--cmd-green);}
+.guide td:first-child{font-family:var(--mono);color:var(--cmd-green);}
+.guide tr:hover td{background:rgba(255,255,255,.02);}
+
+/* ── Permission visualiser ── */
+.perm-visual{display:flex;gap:4px;align-items:flex-end;margin:16px 0 20px;
+  font-family:var(--mono);}
+.perm-group{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.perm-group-label{font-size:9px;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--muted);font-family:var(--ui);font-weight:700;}
+.perm-cells{display:flex;gap:2px;}
+.pcell{width:36px;height:36px;border-radius:5px;display:flex;align-items:center;
+  justify-content:center;font-size:15px;font-weight:700;cursor:default;
+  transition:transform .1s;}
+.pcell:hover{transform:scale(1.08);}
+.pcell.set-r{background:rgba(88,166,255,.18);color:var(--blue);}
+.pcell.set-w{background:rgba(210,153,34,.18);color:var(--orange);}
+.pcell.set-x{background:rgba(63,185,80,.18);color:var(--green);}
+.pcell.unset{background:rgba(255,255,255,.04);color:var(--dim);}
+.pcell.type{background:rgba(188,140,255,.18);color:var(--purple);}
+.perm-sep{width:1px;height:36px;background:var(--border);margin:0 4px;align-self:center;}
+
+/* ── Octal table ── */
+.octal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0 20px;}
+.octal-card{background:rgba(255,255,255,.03);border:1px solid var(--border);
+  border-radius:8px;padding:12px;text-align:center;}
+.octal-num{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--blue);}
+.octal-bits{font-family:var(--mono);font-size:12px;color:var(--purple);margin:3px 0;}
+.octal-sym{font-family:var(--mono);font-size:13px;color:var(--cmd-green);}
+.octal-desc{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* ── Interactive chmod ── */
+.chmod-builder{background:#0c0c0c;border:1px solid var(--border);border-radius:8px;
+  padding:20px;margin:12px 0 24px;}
+.chmod-row{display:flex;gap:20px;margin-bottom:16px;flex-wrap:wrap;}
+.chmod-col{flex:1;min-width:120px;}
+.chmod-col-label{font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.06em;color:var(--muted);margin-bottom:8px;}
+.chmod-checks{display:flex;flex-direction:column;gap:6px;}
+.chmod-check{display:flex;align-items:center;gap:8px;font-size:12px;
+  color:var(--out);cursor:pointer;}
+.chmod-check input{accent-color:var(--blue);width:14px;height:14px;cursor:pointer;}
+.chmod-result{background:rgba(88,166,255,.06);border:1px solid rgba(88,166,255,.2);
+  border-radius:6px;padding:12px 16px;display:flex;align-items:center;
+  gap:16px;flex-wrap:wrap;}
+.chmod-out-sym{font-family:var(--mono);font-size:18px;color:var(--cmd-green);flex:1;}
+.chmod-out-oct{font-family:var(--mono);font-size:18px;color:var(--blue);}
+.chmod-out-cmd{font-family:var(--mono);font-size:13px;color:var(--purple);
+  background:rgba(188,140,255,.08);padding:4px 10px;border-radius:4px;}
+
+/* ── Step cards ── */
+.steps{display:flex;flex-direction:column;gap:12px;margin:12px 0 20px;}
+.step-card{background:rgba(255,255,255,.02);border:1px solid var(--border);
+  border-radius:8px;padding:16px 18px;display:flex;gap:16px;align-items:flex-start;}
+.step-num{width:28px;height:28px;border-radius:50%;background:rgba(88,166,255,.15);
+  color:var(--blue);font-size:13px;font-weight:700;display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-body{}
+.step-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:5px;}
+.step-desc{font-size:12px;color:var(--muted);line-height:1.6;}
+.step-desc code{color:var(--cmd-green);}
+
+/* ── Command cards (horizontal) ── */
+.cmd-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+  gap:10px;margin:10px 0 20px;}
+.cmd-card{background:rgba(255,255,255,.02);border:1px solid var(--border);
+  border-radius:8px;padding:14px 16px;}
+.cmd-card-name{font-family:var(--mono);font-size:14px;color:var(--cmd-green);
+  margin-bottom:4px;}
+.cmd-card-term{font-size:10px;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--muted);margin-bottom:8px;}
+.cmd-card-desc{font-size:12px;color:var(--out);line-height:1.55;}
+.cmd-card-ex{font-family:var(--mono);font-size:11px;color:var(--purple);
+  background:rgba(188,140,255,.06);padding:4px 8px;border-radius:4px;
+  margin-top:8px;display:block;}
+
+/* ── No-GUI action rows ── */
+.action-list{display:flex;flex-direction:column;gap:0;}
+.action-row{display:grid;grid-template-columns:200px 1fr 1fr;gap:0;
+  border-bottom:1px solid rgba(255,255,255,.04);padding:10px 0;}
+.action-row:first-child{border-top:1px solid rgba(255,255,255,.04);}
+.action-row:hover{background:rgba(255,255,255,.01);}
+.ar-task{font-size:12px;color:var(--text);font-weight:500;padding-right:12px;}
+.ar-gui{font-size:12px;color:var(--dim);padding-right:12px;}
+.ar-cmd{font-family:var(--mono);font-size:12px;color:var(--cmd-green);}
+.action-hdr{display:grid;grid-template-columns:200px 1fr 1fr;gap:0;
+  padding:6px 0 8px;margin-bottom:2px;}
+.action-hdr span{font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--muted);}
 </style>
 </head>
 <body>
@@ -157,6 +300,14 @@ header{background:var(--bg-hdr);border-bottom:1px solid var(--border);
   <div class="hdr-tag">↑ hover commands &amp; output for definitions</div>
 </header>
 
+<nav id="tab-nav">
+  <button class="tab-btn active" data-tab="terminal">⌨ Terminal Simulator</button>
+  <button class="tab-btn" data-tab="permissions">🔐 Permissions</button>
+  <button class="tab-btn" data-tab="fileops">📁 File Operations</button>
+  <button class="tab-btn" data-tab="nogui">🖥 No-GUI Computing</button>
+</nav>
+
+<div id="tab-terminal" class="tab-panel active">
 <div id="main">
 
   <!-- Sidebar -->
@@ -195,6 +346,568 @@ header{background:var(--bg-hdr);border-bottom:1px solid var(--border);
     <div id="info-body"></div>
   </aside>
 
+</div>
+
+</div><!-- /tab-terminal -->
+</div><!-- /main -->
+
+<!-- ══════════════════════════════════════════
+     PERMISSIONS TAB
+═══════════════════════════════════════════ -->
+<div id="tab-permissions" class="tab-panel guide-panel">
+<div class="guide">
+  <h1>🔐 Understanding File Permissions</h1>
+  <p class="subtitle">Every file and folder on a Unix system has a set of permissions that control who can read it, write to it, or execute it. Once you can read a permission string, you can control exactly who has access to anything.</p>
+
+  <h2>Reading the Permission String</h2>
+  <p>Run <code>ls -la</code> and you'll see a column like <code>-rwxr-xr-x</code> at the start of each line. This 10-character string tells you everything about who can do what with that file.</p>
+
+  <div class="perm-visual">
+    <div class="perm-group">
+      <div class="perm-group-label">Type</div>
+      <div class="perm-cells">
+        <div class="pcell type" title="File type">-</div>
+      </div>
+    </div>
+    <div class="perm-sep"></div>
+    <div class="perm-group">
+      <div class="perm-group-label">Owner (User)</div>
+      <div class="perm-cells">
+        <div class="pcell set-r" title="Owner can read">r</div>
+        <div class="pcell set-w" title="Owner can write">w</div>
+        <div class="pcell set-x" title="Owner can execute">x</div>
+      </div>
+    </div>
+    <div class="perm-sep"></div>
+    <div class="perm-group">
+      <div class="perm-group-label">Group</div>
+      <div class="perm-cells">
+        <div class="pcell set-r" title="Group can read">r</div>
+        <div class="pcell unset" title="Group cannot write">-</div>
+        <div class="pcell set-x" title="Group can execute">x</div>
+      </div>
+    </div>
+    <div class="perm-sep"></div>
+    <div class="perm-group">
+      <div class="perm-group-label">Others (Everyone)</div>
+      <div class="perm-cells">
+        <div class="pcell set-r" title="Others can read">r</div>
+        <div class="pcell unset" title="Others cannot write">-</div>
+        <div class="pcell set-x" title="Others can execute">x</div>
+      </div>
+    </div>
+  </div>
+
+  <table>
+    <tr><th>Character</th><th>Position</th><th>Meaning</th></tr>
+    <tr><td>-</td><td>1st character</td><td><strong>File type.</strong> <code>-</code> = regular file, <code>d</code> = directory, <code>l</code> = symbolic link</td></tr>
+    <tr><td>r</td><td>Any position</td><td><strong>Read.</strong> View file contents, or list a directory's contents</td></tr>
+    <tr><td>w</td><td>Any position</td><td><strong>Write.</strong> Modify a file, or add/remove items in a directory</td></tr>
+    <tr><td>x</td><td>Any position</td><td><strong>Execute.</strong> Run a file as a program, or enter (cd into) a directory</td></tr>
+    <tr><td>-</td><td>Any position</td><td><strong>Permission not granted</strong> for this action</td></tr>
+  </table>
+
+  <h2>The Three Permission Groups</h2>
+  <p>Permissions are always defined for three groups of people, in this order:</p>
+  <div class="steps">
+    <div class="step-card">
+      <div class="step-num" style="background:rgba(88,166,255,.2);color:var(--blue);">U</div>
+      <div class="step-body">
+        <div class="step-title">Owner (User)</div>
+        <div class="step-desc">The person who created the file. On your Mac, this is usually your account. The owner gets the first 3 permission characters after the file type. The owner can always change a file's permissions with <code>chmod</code>.</div>
+      </div>
+    </div>
+    <div class="step-card">
+      <div class="step-num" style="background:rgba(63,185,80,.2);color:var(--green);">G</div>
+      <div class="step-body">
+        <div class="step-title">Group</div>
+        <div class="step-desc">A named collection of users. On macOS, most files belong to the <code>staff</code> group. Groups let you share access with a team without opening it to everyone. The group gets characters 4–6.</div>
+      </div>
+    </div>
+    <div class="step-card">
+      <div class="step-num" style="background:rgba(247,129,102,.2);color:var(--cat);">O</div>
+      <div class="step-body">
+        <div class="step-title">Others (World)</div>
+        <div class="step-desc">Everyone else — any user on the system who isn't the owner and isn't in the group. These are the last 3 characters. Web servers often use "others" permissions to serve public files.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Octal Notation — The Numbers Behind Permissions</h2>
+  <p>The <code>chmod</code> command accepts a 3-digit number like <code>755</code>. Each digit represents the permissions for Owner, Group, and Others respectively. Each digit is the sum of: <strong>4</strong> (read) + <strong>2</strong> (write) + <strong>1</strong> (execute).</p>
+
+  <div class="octal-grid">
+    <div class="octal-card"><div class="octal-num">7</div><div class="octal-bits">4+2+1</div><div class="octal-sym">rwx</div><div class="octal-desc">Full access</div></div>
+    <div class="octal-card"><div class="octal-num">6</div><div class="octal-bits">4+2+0</div><div class="octal-sym">rw-</div><div class="octal-desc">Read & write</div></div>
+    <div class="octal-card"><div class="octal-num">5</div><div class="octal-bits">4+0+1</div><div class="octal-sym">r-x</div><div class="octal-desc">Read & execute</div></div>
+    <div class="octal-card"><div class="octal-num">4</div><div class="octal-bits">4+0+0</div><div class="octal-sym">r--</div><div class="octal-desc">Read only</div></div>
+    <div class="octal-card"><div class="octal-num">3</div><div class="octal-bits">0+2+1</div><div class="octal-sym">-wx</div><div class="octal-desc">Write & execute</div></div>
+    <div class="octal-card"><div class="octal-num">2</div><div class="octal-bits">0+2+0</div><div class="octal-sym">-w-</div><div class="octal-desc">Write only</div></div>
+    <div class="octal-card"><div class="octal-num">1</div><div class="octal-bits">0+0+1</div><div class="octal-sym">--x</div><div class="octal-desc">Execute only</div></div>
+    <div class="octal-card"><div class="octal-num">0</div><div class="octal-bits">0+0+0</div><div class="octal-sym">---</div><div class="octal-desc">No access</div></div>
+  </div>
+
+  <h2>Interactive chmod Builder</h2>
+  <p>Check the boxes below to build your permission set and see the resulting command.</p>
+  <div class="chmod-builder">
+    <div class="chmod-row">
+      <div class="chmod-col">
+        <div class="chmod-col-label" style="color:var(--blue);">👤 Owner</div>
+        <div class="chmod-checks">
+          <label class="chmod-check"><input type="checkbox" id="ur" checked> Read (4)</label>
+          <label class="chmod-check"><input type="checkbox" id="uw" checked> Write (2)</label>
+          <label class="chmod-check"><input type="checkbox" id="ux" checked> Execute (1)</label>
+        </div>
+      </div>
+      <div class="chmod-col">
+        <div class="chmod-col-label" style="color:var(--green);">👥 Group</div>
+        <div class="chmod-checks">
+          <label class="chmod-check"><input type="checkbox" id="gr" checked> Read (4)</label>
+          <label class="chmod-check"><input type="checkbox" id="gw"> Write (2)</label>
+          <label class="chmod-check"><input type="checkbox" id="gx" checked> Execute (1)</label>
+        </div>
+      </div>
+      <div class="chmod-col">
+        <div class="chmod-col-label" style="color:var(--cat);">🌍 Others</div>
+        <div class="chmod-checks">
+          <label class="chmod-check"><input type="checkbox" id="or" checked> Read (4)</label>
+          <label class="chmod-check"><input type="checkbox" id="ow"> Write (2)</label>
+          <label class="chmod-check"><input type="checkbox" id="ox" checked> Execute (1)</label>
+        </div>
+      </div>
+    </div>
+    <div class="chmod-result">
+      <span class="chmod-out-sym" id="chmod-sym">-rwxr-xr-x</span>
+      <span class="chmod-out-oct" id="chmod-oct">755</span>
+      <span class="chmod-out-cmd" id="chmod-cmd">chmod 755 filename</span>
+    </div>
+  </div>
+
+  <h2>Common Permission Combinations</h2>
+  <table>
+    <tr><th>Octal</th><th>Symbolic</th><th>Typical Use</th></tr>
+    <tr><td>755</td><td>rwxr-xr-x</td><td>Executable scripts and programs. Owner can edit; everyone can run it.</td></tr>
+    <tr><td>644</td><td>rw-r--r--</td><td>Regular files (HTML, config, documents). Owner can edit; everyone can read.</td></tr>
+    <tr><td>700</td><td>rwx------</td><td>Private scripts. Only you can read, write, or run it.</td></tr>
+    <tr><td>600</td><td>rw-------</td><td>Private files (SSH keys, passwords). Only you can read or edit it.</td></tr>
+    <tr><td>777</td><td>rwxrwxrwx</td><td>Anyone can do anything. ⚠️ Avoid on servers — a security risk.</td></tr>
+    <tr><td>444</td><td>r--r--r--</td><td>Read-only for everyone. Good for archiving important files.</td></tr>
+    <tr><td>664</td><td>rw-rw-r--</td><td>Shared team files. Owner and group can edit; others can only read.</td></tr>
+  </table>
+
+  <div class="callout warn">
+    <strong>⚠ About sudo and root</strong><br>
+    The <code>root</code> user (superuser) ignores all permission restrictions — root can read, write, and execute any file regardless of its permissions. When you use <code>sudo</code>, you temporarily act as root. This is why <code>sudo</code> requires a password and should be used carefully.
+  </div>
+
+  <h2>Changing Permissions with chmod</h2>
+  <pre><span class="m"># Octal notation (recommended)</span>
+<span class="g">chmod</span> <span class="b">755</span> script.sh          <span class="m"># rwxr-xr-x — owner full, group/others read+exec</span>
+<span class="g">chmod</span> <span class="b">644</span> index.html         <span class="m"># rw-r--r-- — owner read/write, others read-only</span>
+<span class="g">chmod</span> <span class="b">600</span> ~/.ssh/id_rsa      <span class="m"># rw------- — private key, owner only</span>
+<span class="g">chmod</span> <span class="b">-R 755</span> ./public/       <span class="m"># -R applies recursively to all files in folder</span>
+
+<span class="m"># Symbolic notation (easier to remember)</span>
+<span class="g">chmod</span> <span class="p">+x</span> script.sh           <span class="m"># Add execute for everyone</span>
+<span class="g">chmod</span> <span class="p">u+x</span> script.sh          <span class="m"># Add execute for owner only</span>
+<span class="g">chmod</span> <span class="p">go-w</span> file.txt          <span class="m"># Remove write from group and others</span>
+<span class="g">chmod</span> <span class="p">a=r</span> file.txt           <span class="m"># Set all (a) to read-only</span></pre>
+
+  <h2>Changing Ownership with chown</h2>
+  <p>Permissions tell you <em>what</em> can be done. Ownership tells you <em>who</em> the file belongs to. Use <code>chown</code> to transfer ownership.</p>
+  <pre><span class="m"># Change owner only</span>
+<span class="g">sudo chown</span> darkness file.txt
+
+<span class="m"># Change owner and group</span>
+<span class="g">sudo chown</span> darkness<span class="p">:</span>staff file.txt
+
+<span class="m"># Change group only</span>
+<span class="g">sudo chown</span> <span class="p">:</span>developers project/
+
+<span class="m"># Recursively change ownership of a whole directory</span>
+<span class="g">sudo chown</span> <span class="b">-R</span> darkness<span class="p">:</span>staff /var/www/mysite/</pre>
+
+  <div class="callout">
+    <strong>💡 Tip — Why SSH keys stop working</strong><br>
+    SSH private keys must have exactly <code>600</code> permissions (<code>-rw-------</code>). If the file is too permissive (e.g. <code>644</code>), SSH refuses to use it as a security measure. Fix it with <code>chmod 600 ~/.ssh/id_rsa</code>.
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     FILE OPERATIONS TAB
+═══════════════════════════════════════════ -->
+<div id="tab-fileops" class="tab-panel guide-panel">
+<div class="guide">
+  <h1>📁 File Operations</h1>
+  <p class="subtitle">The terminal gives you precise, scriptable control over every file on your system. These are the core operations you'll use daily — creating, reading, editing, copying, moving, and deleting files and folders.</p>
+
+  <h2>Creating Files and Folders</h2>
+  <div class="cmd-cards">
+    <div class="cmd-card">
+      <div class="cmd-card-name">touch</div>
+      <div class="cmd-card-term">Create empty file</div>
+      <div class="cmd-card-desc">Creates a new empty file instantly. If the file exists, it just updates the timestamp.</div>
+      <code class="cmd-card-ex">touch notes.txt</code>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-card-name">mkdir</div>
+      <div class="cmd-card-term">Create folder</div>
+      <div class="cmd-card-desc">Creates a new empty directory. Add <code>-p</code> to create nested folders in one command.</div>
+      <code class="cmd-card-ex">mkdir -p src/components/ui</code>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-card-name">echo &gt;</div>
+      <div class="cmd-card-term">Create file with content</div>
+      <div class="cmd-card-desc">Creates a file and writes text into it in one step using output redirection.</div>
+      <code class="cmd-card-ex">echo "Hello" &gt; welcome.txt</code>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd-card-name">cat &gt;&gt;</div>
+      <div class="cmd-card-term">Append to file</div>
+      <div class="cmd-card-desc">Appends text to the end of an existing file without overwriting it (<code>&gt;&gt;</code> vs <code>&gt;</code>).</div>
+      <code class="cmd-card-ex">echo "new line" &gt;&gt; log.txt</code>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>💡 Redirection: &gt; vs &gt;&gt;</strong><br>
+    <code>&gt;</code> overwrites the file completely. <code>&gt;&gt;</code> appends to the end. Always double-check which one you're using — overwriting the wrong file with <code>&gt;</code> is a common mistake.
+  </div>
+
+  <h2>Reading Files</h2>
+  <pre><span class="m"># Print entire file to terminal</span>
+<span class="g">cat</span> notes.txt
+
+<span class="m"># Read large files page-by-page (space=next page, q=quit)</span>
+<span class="g">less</span> /var/log/system.log
+
+<span class="m"># Show just the first 10 lines</span>
+<span class="g">head</span> access.log
+
+<span class="m"># Show just the last 10 lines</span>
+<span class="g">tail</span> access.log
+
+<span class="m"># Watch a log file live as new lines are added</span>
+<span class="g">tail</span> <span class="b">-f</span> /var/log/system.log
+
+<span class="m"># Search inside a file for a word</span>
+<span class="g">grep</span> <span class="p">"error"</span> app.log</pre>
+
+  <h2>Editing Files</h2>
+  <p>There are several ways to edit a file directly from the terminal.</p>
+  <div class="steps">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">nano — the beginner-friendly editor</div>
+        <div class="step-desc">Opens the file in a simple editor right in your terminal. Control shortcuts are shown at the bottom. <code>^X</code> = Ctrl+X to exit, <code>^S</code> = save. No modes to learn.<br><code>nano notes.txt</code></div>
+      </div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">vim — the power editor</div>
+        <div class="step-desc">Opens in Normal mode. Press <code>i</code> to enter Insert (typing) mode. Press <code>Esc</code> to return to Normal mode. Type <code>:wq</code> to save and quit, <code>:q!</code> to quit without saving.<br><code>vim server.js</code></div>
+      </div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">open -e — opens in TextEdit</div>
+        <div class="step-desc">Launches the file in macOS TextEdit — a GUI app, but triggered from the terminal. Useful when you want a graphical editor for quick edits.<br><code>open -e config.txt</code></div>
+      </div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <div class="step-title">sed — non-interactive find and replace</div>
+        <div class="step-desc">Replace text in a file without opening it. The <code>-i</code> flag edits the file in-place. Great for scripting bulk changes.<br><code>sed -i '' 's/localhost/prod.server.com/g' config.txt</code></div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Copying Files and Folders</h2>
+  <pre><span class="m"># Copy a single file</span>
+<span class="g">cp</span> report.pdf ~/Desktop/report-copy.pdf
+
+<span class="m"># Copy into a folder (keeps the original filename)</span>
+<span class="g">cp</span> report.pdf ~/Desktop/
+
+<span class="m"># Copy an entire folder and its contents (-r = recursive)</span>
+<span class="g">cp</span> <span class="b">-r</span> project/ ~/Desktop/project-backup/
+
+<span class="m"># Copy multiple files into a folder</span>
+<span class="g">cp</span> *.txt ~/Documents/text-files/
+
+<span class="m"># Verbose: print each file as it copies</span>
+<span class="g">cp</span> <span class="b">-rv</span> src/ backup/</pre>
+
+  <div class="callout warn">
+    <strong>⚠ cp overwrites without asking</strong><br>
+    If the destination file already exists, <code>cp</code> will silently overwrite it. Use <code>cp -n</code> (no-clobber) to skip existing files, or <code>cp -i</code> to be prompted before overwriting.
+  </div>
+
+  <h2>Moving and Renaming</h2>
+  <p><code>mv</code> does both moving and renaming — they're the same operation. If source and destination are in the same folder, it's a rename. If they're different paths, it's a move.</p>
+  <pre><span class="m"># Rename a file (same directory)</span>
+<span class="g">mv</span> draft.txt final-report.txt
+
+<span class="m"># Move a file to a different folder</span>
+<span class="g">mv</span> invoice.pdf ~/Documents/Finance/2026/
+
+<span class="m"># Move multiple files at once</span>
+<span class="g">mv</span> *.log ~/logs/archive/
+
+<span class="m"># Rename a folder</span>
+<span class="g">mv</span> old-project/ new-project-name/
+
+<span class="m"># Safe move: prompt before overwriting</span>
+<span class="g">mv</span> <span class="b">-i</span> source.txt destination.txt</pre>
+
+  <h2>Opening Files and Applications</h2>
+  <pre><span class="m"># Open a file with its default app (like double-clicking)</span>
+<span class="g">open</span> photo.jpg              <span class="m"># Opens in Preview</span>
+<span class="g">open</span> index.html             <span class="m"># Opens in your default browser</span>
+<span class="g">open</span> spreadsheet.xlsx       <span class="m"># Opens in Numbers or Excel</span>
+
+<span class="m"># Open the current directory in Finder</span>
+<span class="g">open</span> <span class="p">.</span>
+
+<span class="m"># Open with a specific application</span>
+<span class="g">open</span> <span class="b">-a</span> <span class="p">"Visual Studio Code"</span> .
+<span class="g">open</span> <span class="b">-a</span> <span class="p">"Google Chrome"</span> index.html
+<span class="g">open</span> <span class="b">-a</span> <span class="p">"Preview"</span> document.pdf
+
+<span class="m"># Open a URL in the default browser</span>
+<span class="g">open</span> https://github.com
+
+<span class="m"># Open TextEdit for quick editing</span>
+<span class="g">open</span> <span class="b">-e</span> notes.txt
+
+<span class="m"># Reveal a file in Finder without opening it</span>
+<span class="g">open</span> <span class="b">-R</span> ~/Documents/report.pdf</pre>
+
+  <h2>Deleting Files and Folders</h2>
+  <div class="callout danger">
+    <strong>⛔ Deleted files do NOT go to Trash</strong><br>
+    <code>rm</code> permanently deletes files with no recovery option. There is no undo. Always double-check your command before pressing Enter, especially when using wildcards or <code>-rf</code>.
+  </div>
+  <pre><span class="m"># Delete a single file</span>
+<span class="g">rm</span> old-notes.txt
+
+<span class="m"># Delete with confirmation prompt (safer)</span>
+<span class="g">rm</span> <span class="b">-i</span> important.txt
+
+<span class="m"># Delete an empty folder</span>
+<span class="g">rmdir</span> empty-folder/
+
+<span class="m"># Delete a folder and ALL its contents (use with extreme care)</span>
+<span class="g">rm</span> <span class="b">-rf</span> old-project/
+
+<span class="m"># Move to Trash instead of permanently deleting (macOS)</span>
+<span class="g">trash</span> file.txt              <span class="m"># Requires: brew install trash</span></pre>
+
+  <h2>Working with Archives</h2>
+  <pre><span class="m"># Create a compressed .tar.gz archive</span>
+<span class="g">tar</span> <span class="b">-czf</span> backup.tar.gz projects/
+
+<span class="m"># Extract a .tar.gz archive</span>
+<span class="g">tar</span> <span class="b">-xzf</span> backup.tar.gz
+
+<span class="m"># Extract to a specific folder</span>
+<span class="g">tar</span> <span class="b">-xzf</span> backup.tar.gz <span class="b">-C</span> ~/Desktop/
+
+<span class="m"># Create a .zip file</span>
+<span class="g">zip</span> <span class="b">-r</span> archive.zip folder/
+
+<span class="m"># Extract a .zip file</span>
+<span class="g">unzip</span> archive.zip
+
+<span class="m"># List contents without extracting</span>
+<span class="g">unzip</span> <span class="b">-l</span> archive.zip</pre>
+
+  <h2>Finding Files</h2>
+  <pre><span class="m"># Find by name in current directory</span>
+<span class="g">find</span> <span class="p">.</span> <span class="b">-name</span> <span class="p">"*.pdf"</span>
+
+<span class="m"># Find files modified in the last 7 days</span>
+<span class="g">find</span> ~/Documents <span class="b">-mtime -7</span>
+
+<span class="m"># Find and delete all .DS_Store files</span>
+<span class="g">find</span> <span class="p">.</span> <span class="b">-name</span> ".DS_Store" <span class="b">-delete</span>
+
+<span class="m"># Spotlight search (searches file content too)</span>
+<span class="g">mdfind</span> <span class="p">"quarterly report"</span> <span class="b">-onlyin</span> ~/Documents
+
+<span class="m"># Find files larger than 100MB</span>
+<span class="g">find</span> ~ <span class="b">-size +100M</span> <span class="b">-type f</span></pre>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     NO-GUI TAB
+═══════════════════════════════════════════ -->
+<div id="tab-nogui" class="tab-panel guide-panel">
+<div class="guide">
+  <h1>🖥 Interacting with Your Mac Without the GUI</h1>
+  <p class="subtitle">Every action you normally do by clicking and dragging has a terminal equivalent. This guide maps common macOS tasks to their command-line counterparts — giving you faster, automatable, and scriptable control over your entire computer.</p>
+
+  <h2>Launching and Quitting Applications</h2>
+  <pre><span class="m"># Open any application</span>
+<span class="g">open</span> <span class="b">-a</span> <span class="p">"Finder"</span>
+<span class="g">open</span> <span class="b">-a</span> <span class="p">"Google Chrome"</span>
+<span class="g">open</span> <span class="b">-a</span> <span class="p">"System Preferences"</span>
+
+<span class="m"># Open an app with a specific file</span>
+<span class="g">open</span> <span class="b">-a</span> <span class="p">"Xcode"</span> MyProject.xcodeproj
+
+<span class="m"># Quit an app by name (graceful, like Cmd+Q)</span>
+<span class="g">osascript</span> <span class="b">-e</span> <span class="p">'quit app "Slack"'</span>
+
+<span class="m"># Force quit a frozen app by name</span>
+<span class="g">killall</span> Finder
+<span class="g">killall</span> <span class="p">"Google Chrome"</span>
+
+<span class="m"># Force kill by PID (use 'ps aux' or 'top' to find the PID)</span>
+<span class="g">kill</span> <span class="b">-9</span> <span class="o">4821</span>
+
+<span class="m"># Restart Finder and Dock</span>
+<span class="g">killall</span> Finder
+<span class="g">killall</span> Dock</pre>
+
+  <h2>GUI Tasks → Terminal Equivalents</h2>
+  <div class="action-hdr">
+    <span>Task</span><span>GUI Method</span><span>Terminal Command</span>
+  </div>
+  <div class="action-list">
+    <div class="action-row"><div class="ar-task">Open a folder</div><div class="ar-gui">Double-click in Finder</div><div class="ar-cmd">cd ~/Documents</div></div>
+    <div class="action-row"><div class="ar-task">See what's in a folder</div><div class="ar-gui">Browse Finder window</div><div class="ar-cmd">ls -la</div></div>
+    <div class="action-row"><div class="ar-task">Open a file</div><div class="ar-gui">Double-click the file</div><div class="ar-cmd">open filename.pdf</div></div>
+    <div class="action-row"><div class="ar-task">Create a new folder</div><div class="ar-gui">Right-click → New Folder</div><div class="ar-cmd">mkdir new-folder</div></div>
+    <div class="action-row"><div class="ar-task">Rename a file</div><div class="ar-gui">Click filename, pause, edit</div><div class="ar-cmd">mv old.txt new.txt</div></div>
+    <div class="action-row"><div class="ar-task">Copy a file</div><div class="ar-gui">Cmd+C then Cmd+V</div><div class="ar-cmd">cp file.txt copy.txt</div></div>
+    <div class="action-row"><div class="ar-task">Move a file</div><div class="ar-gui">Drag to destination</div><div class="ar-cmd">mv file.txt ~/Desktop/</div></div>
+    <div class="action-row"><div class="ar-task">Delete a file</div><div class="ar-gui">Drag to Trash or Cmd+Del</div><div class="ar-cmd">rm file.txt</div></div>
+    <div class="action-row"><div class="ar-task">Find a file</div><div class="ar-gui">Spotlight (Cmd+Space)</div><div class="ar-cmd">mdfind "filename"</div></div>
+    <div class="action-row"><div class="ar-task">See disk space</div><div class="ar-gui">About This Mac → Storage</div><div class="ar-cmd">df -h</div></div>
+    <div class="action-row"><div class="ar-task">See folder sizes</div><div class="ar-gui">Get Info on each folder</div><div class="ar-cmd">du -sh *</div></div>
+    <div class="action-row"><div class="ar-task">Take a screenshot</div><div class="ar-gui">Cmd+Shift+3 or 4</div><div class="ar-cmd">screencapture -x screen.png</div></div>
+    <div class="action-row"><div class="ar-task">Check Wi-Fi status</div><div class="ar-gui">Menu bar Wi-Fi icon</div><div class="ar-cmd">networksetup -getairportnetwork en0</div></div>
+    <div class="action-row"><div class="ar-task">Connect to Wi-Fi</div><div class="ar-gui">Click Wi-Fi → choose network</div><div class="ar-cmd">networksetup -setairportnetwork en0 "MyNetwork" "password"</div></div>
+    <div class="action-row"><div class="ar-task">See your IP address</div><div class="ar-gui">System Settings → Network</div><div class="ar-cmd">ipconfig getifaddr en0</div></div>
+    <div class="action-row"><div class="ar-task">Check macOS version</div><div class="ar-gui">Apple menu → About This Mac</div><div class="ar-cmd">sw_vers</div></div>
+    <div class="action-row"><div class="ar-task">See RAM and CPU</div><div class="ar-gui">Activity Monitor</div><div class="ar-cmd">top -o cpu</div></div>
+    <div class="action-row"><div class="ar-task">Kill a frozen app</div><div class="ar-gui">Force Quit (Cmd+Opt+Esc)</div><div class="ar-cmd">killall AppName</div></div>
+    <div class="action-row"><div class="ar-task">Install software</div><div class="ar-gui">Download .dmg, drag to Apps</div><div class="ar-cmd">brew install appname</div></div>
+    <div class="action-row"><div class="ar-task">Change a system setting</div><div class="ar-gui">System Settings → ...</div><div class="ar-cmd">defaults write ... (see below)</div></div>
+    <div class="action-row"><div class="ar-task">Empty Trash</div><div class="ar-gui">Right-click Trash → Empty</div><div class="ar-cmd">rm -rf ~/.Trash/*</div></div>
+    <div class="action-row"><div class="ar-task">Lock the screen</div><div class="ar-gui">Ctrl+Cmd+Q</div><div class="ar-cmd">osascript -e 'tell app "System Events" to keystroke "q" using {control down, command down}'</div></div>
+    <div class="action-row"><div class="ar-task">Shutdown</div><div class="ar-gui">Apple menu → Shut Down</div><div class="ar-cmd">sudo shutdown -h now</div></div>
+    <div class="action-row"><div class="ar-task">Restart</div><div class="ar-gui">Apple menu → Restart</div><div class="ar-cmd">sudo shutdown -r now</div></div>
+    <div class="action-row"><div class="ar-task">Sleep</div><div class="ar-gui">Apple menu → Sleep</div><div class="ar-cmd">pmset sleepnow</div></div>
+  </div>
+
+  <h2>Managing System Settings via Terminal</h2>
+  <p>The <code>defaults</code> command reads and writes macOS system and app preferences — including many hidden settings not exposed in System Settings.</p>
+  <pre><span class="m"># Show hidden files in Finder</span>
+<span class="g">defaults write</span> com.apple.finder AppleShowAllFiles <span class="b">YES</span>
+<span class="g">killall</span> Finder   <span class="m"># restart Finder to apply</span>
+
+<span class="m"># Show the full file path in the Finder title bar</span>
+<span class="g">defaults write</span> com.apple.finder _FXShowPosixPathInTitle <span class="b">-bool true</span>
+
+<span class="m"># Disable the "Are you sure you want to open this?" dialog</span>
+<span class="g">defaults write</span> com.apple.LaunchServices LSQuarantine <span class="b">-bool false</span>
+
+<span class="m"># Speed up Dock animations</span>
+<span class="g">defaults write</span> com.apple.dock autohide-time-modifier <span class="b">-float 0.15</span>
+<span class="g">killall</span> Dock
+
+<span class="m"># Show all file extensions in Finder</span>
+<span class="g">defaults write</span> NSGlobalDomain AppleShowAllExtensions <span class="b">-bool true</span>
+
+<span class="m"># Disable auto-correct</span>
+<span class="g">defaults write</span> NSGlobalDomain NSAutomaticSpellingCorrectionEnabled <span class="b">-bool false</span>
+
+<span class="m"># Read a current setting value</span>
+<span class="g">defaults read</span> com.apple.finder AppleShowAllFiles
+
+<span class="m"># Reset a setting to default</span>
+<span class="g">defaults delete</span> com.apple.finder AppleShowAllFiles</pre>
+
+  <h2>Network Management</h2>
+  <pre><span class="m"># List all network services</span>
+<span class="g">networksetup</span> <span class="b">-listallnetworkservices</span>
+
+<span class="m"># Get current Wi-Fi network name</span>
+<span class="g">networksetup</span> <span class="b">-getairportnetwork</span> en0
+
+<span class="m"># Connect to a Wi-Fi network</span>
+<span class="g">networksetup</span> <span class="b">-setairportnetwork</span> en0 <span class="p">"NetworkName"</span> <span class="p">"password"</span>
+
+<span class="m"># Turn Wi-Fi off and on</span>
+<span class="g">networksetup</span> <span class="b">-setairportpower</span> en0 off
+<span class="g">networksetup</span> <span class="b">-setairportpower</span> en0 on
+
+<span class="m"># Set DNS servers (e.g. Cloudflare)</span>
+<span class="g">sudo networksetup</span> <span class="b">-setdnsservers</span> Wi-Fi 1.1.1.1 1.0.0.1
+
+<span class="m"># Flush DNS cache</span>
+<span class="g">sudo dscacheutil</span> <span class="b">-flushcache</span>
+
+<span class="m"># Get your public IP address</span>
+<span class="g">curl</span> <span class="b">-s</span> https://api.ipify.org</pre>
+
+  <h2>Automation with Scripts</h2>
+  <p>The real power of the terminal is combining commands to automate tasks. Save any sequence of commands in a <code>.sh</code> file and run it whenever you need.</p>
+  <pre><span class="m">#!/bin/zsh
+# save as cleanup.sh, then: chmod +x cleanup.sh &amp;&amp; ./cleanup.sh</span>
+
+<span class="m"># Automated cleanup script</span>
+<span class="g">echo</span> <span class="p">"Starting cleanup..."</span>
+
+<span class="m"># Empty Downloads folder older than 30 days</span>
+<span class="g">find</span> ~/Downloads <span class="b">-mtime +30</span> <span class="b">-type f</span> <span class="b">-delete</span>
+
+<span class="m"># Remove .DS_Store files everywhere</span>
+<span class="g">find</span> ~ <span class="b">-name</span> <span class="p">".DS_Store"</span> <span class="b">-delete</span>
+
+<span class="m"># Empty Trash</span>
+<span class="g">rm</span> <span class="b">-rf</span> ~/.Trash/*
+
+<span class="m"># Show disk space remaining</span>
+<span class="g">df</span> <span class="b">-h</span> / | <span class="g">tail</span> <span class="b">-1</span>
+
+<span class="g">say</span> <span class="p">"Cleanup complete"</span>
+<span class="g">echo</span> <span class="p">"Done."</span></pre>
+
+  <div class="callout">
+    <strong>💡 Making a script executable and running it</strong><br>
+    After writing a script, you need to give it execute permission before running it:<br>
+    <code>chmod +x myscript.sh</code> — grants execute permission<br>
+    <code>./myscript.sh</code> — runs it<br>
+    Add it to <code>~/bin/</code> (and add that to your PATH) to run it from anywhere by just typing its name.
+  </div>
+
+  <h2>Useful Keyboard Shortcuts in the Terminal</h2>
+  <table>
+    <tr><th>Shortcut</th><th>What it does</th></tr>
+    <tr><td>Tab</td><td>Autocomplete a command, filename, or path</td></tr>
+    <tr><td>↑ / ↓</td><td>Scroll through previous commands</td></tr>
+    <tr><td>Ctrl+R</td><td>Search through command history interactively</td></tr>
+    <tr><td>Ctrl+C</td><td>Cancel the currently running command</td></tr>
+    <tr><td>Ctrl+Z</td><td>Pause (suspend) a running command</td></tr>
+    <tr><td>Ctrl+L</td><td>Clear the screen (same as typing <code>clear</code>)</td></tr>
+    <tr><td>Ctrl+A</td><td>Jump to the beginning of the current line</td></tr>
+    <tr><td>Ctrl+E</td><td>Jump to the end of the current line</td></tr>
+    <tr><td>Ctrl+W</td><td>Delete the last word typed</td></tr>
+    <tr><td>Ctrl+U</td><td>Delete everything before the cursor</td></tr>
+    <tr><td>Cmd+T</td><td>Open a new terminal tab</td></tr>
+    <tr><td>!!</td><td>Repeat the last command</td></tr>
+    <tr><td>sudo !!</td><td>Re-run the last command as root</td></tr>
+  </table>
+</div>
 </div>
 
 <!-- Floating tooltip bubble -->
@@ -1531,6 +2244,56 @@ function positionBubble(e) {
   bubble.style.left = (x + w > window.innerWidth ? x - w - 28 : x) + 'px';
   bubble.style.top  = (y + h > window.innerHeight ? y - h - 14 : y) + 'px';
 }
+
+// ════════════════════════════════════════════════════════════
+//  TAB SWITCHING
+// ════════════════════════════════════════════════════════════
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const target = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + target).classList.add('active');
+    if (target === 'terminal') cmdInput.focus();
+  });
+});
+
+// ════════════════════════════════════════════════════════════
+//  CHMOD BUILDER
+// ════════════════════════════════════════════════════════════
+function updateChmod() {
+  const ids = ['ur','uw','ux','gr','gw','gx','or','ow','ox'];
+  const vals = ids.map(id => {
+    const el = document.getElementById(id);
+    return el ? el.checked : false;
+  });
+  if (!vals.some(v => v !== undefined)) return; // not in DOM yet
+
+  const syms = ['r','w','x'];
+  let symbolic = '-';
+  let octal = '';
+  for (let g = 0; g < 3; g++) {
+    let num = 0;
+    for (let b = 0; b < 3; b++) {
+      const checked = vals[g * 3 + b];
+      symbolic += checked ? syms[b] : '-';
+      if (checked) num += [4, 2, 1][b];
+    }
+    octal += num;
+  }
+  const symEl = document.getElementById('chmod-sym');
+  const octEl = document.getElementById('chmod-oct');
+  const cmdEl = document.getElementById('chmod-cmd');
+  if (symEl) symEl.textContent = symbolic;
+  if (octEl) octEl.textContent = octal;
+  if (cmdEl) cmdEl.textContent = `chmod ${octal} filename`;
+}
+
+// Wire up chmod checkboxes via delegation (they may not exist on first tick)
+document.addEventListener('change', e => {
+  if (e.target.closest('.chmod-builder')) updateChmod();
+});
 
 // ════════════════════════════════════════════════════════════
 //  INIT
